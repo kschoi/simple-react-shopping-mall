@@ -14,7 +14,7 @@ const Main = (props) => {
 const RenderProducts = (props) => {
   return props.products.map((product) => {
     return (
-      <div className="product">
+      <div className="product" key={product.id}>
         <Link className="productImg" to={`/item/${product.id}`}>
           <img src={product.image} alt="food" />
         </Link>
