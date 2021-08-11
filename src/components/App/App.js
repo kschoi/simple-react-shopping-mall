@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import "./App.css";
-import { MemoryRouter, Route, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import Nav from "../Nav/Nav";
 import Cart from "../Cart/Cart";
 import Main from "../Main/Main";
@@ -10,35 +10,33 @@ import productsData from "../../MOCK_DATA.json";
 const App = () => {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
+  const cartRef = useRef([]);
 
   const totalAmount = useMemo(
     () =>
-      cart.reduce((prev, item) => {
+      cartRef.current.reduce((prev, item) => {
         if (item.checked) {
           prev += item.price * Number(item.quantity);
         }
         return prev;
       }, 0),
-    [cart]
+    []
   );
 
-  //장바구니에 이미 제품이 있는지 확인하는 method
-  const checkProduct = useMemo(
-    (id) => cart.some((item) => item.id === id),
-    [cart]
-  );
+  //장바구니에 선택한 물품 추가
+  const handleAddToCart = (product) => {
+    setCart((prev) => {
+      if (prev.some((item) => item.id === product.id)) {
+        let index = prev.findIndex((item) => item.id === product.id);
+        prev[index].quantity += 1;
+      } else {
+        prev.push({ ...product, quantity: 1 });
+      }
+      return prev;
+    });
 
-  //장바구니에 선택한 물품을 추가하는 method
-  const handleAddToCart = (selectedProducts) => {
-    let cartItem = [...cart];
-    let productID = selectedProducts.id;
-    if (checkProduct(productID)) {
-      let index = cartItem.findIndex((item) => item.id === productID);
-      cartItem[index].quantity += 1;
-    } else {
-      cartItem.push({ ...selectedProducts, quantity: 1 });
-    }
-    setCart(cartItem);
+    // cart가 업데이트되면 local storage에 cart 업데이트하기
+    localStorage.cart = JSON.stringify(cart);
   };
 
   useEffect(() => {
@@ -51,45 +49,32 @@ const App = () => {
     }
   }, []);
 
-  // cart가 업데이트되면 local storage에 cart 업데이트하기
-  useEffect(() => {
-    localStorage.cart = JSON.stringify(cart);
-  }, [cart]);
-
   return (
-    <div>
+    <>
       <Nav />
-      {/* Switch로 Component를 감싸게 되면 처음 매칭되는 Component만을 렌더링하게 된다. */}
-      <Switch>
-        {/* 
-        Route는 임의의 url로 이동할 경우 어떤 Component를 렌더링할지 정해준다.
-        path로 원하는 url, 그리고 렌더링 하길 원하는 Component를 지정한다.
-        */}
-        <Route exact path="/" render={() => <Main products={products} />} />
-        {products.map((product) => (
-          <MemoryRouter
+      <main>
+        {/* Switch로 Component를 감싸게 되면 처음 매칭되는 Component만을 렌더링하게 된다. */}
+        <Switch>
+          {/*
+           * Route는 임의의 url로 이동할 경우 어떤 Component를 렌더링할지 정해준다.
+           * path로 원하는 url, 그리고 렌더링 하길 원하는 Component를 지정한다.
+           */}
+          <Route exact path="/" render={() => <Main products={products} />} />
+          <Route
             exact
-            key={product.id}
-            path={`/item/${product.id}`}
-            render={() => (
-              <Item
-                addToCart={handleAddToCart}
-                // productQuantity={product.quantity}
-                image={product.image}
-                name={product.name}
-                price={product.price}
-                id={product.id}
-              />
+            path="/item/:id"
+            component={() => (
+              <Item products={products} addToCart={handleAddToCart} />
             )}
           />
-        ))}
-        <Route
-          exact
-          path="/cart"
-          render={() => <Cart cart={cart} totalAmount={totalAmount} />}
-        />
-      </Switch>
-    </div>
+          <Route
+            exact
+            path="/cart"
+            component={() => <Cart cart={cart} totalAmount={totalAmount} />}
+          />
+        </Switch>
+      </main>
+    </>
   );
 };
 
