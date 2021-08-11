@@ -1,0 +1,16 @@
+.item__img {
+  width: 100%;
+}
+.item__title {
+  margin-top: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: -0.5px;
+}
+.item__price {
+  margin-top: 10px;
+  font-size: 18px;
+}
+.item__btn--cart {
+  margin-top: 10px;
+}

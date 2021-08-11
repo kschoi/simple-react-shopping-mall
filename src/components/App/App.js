@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useHistory } from "react-router-dom";
 import Nav from "../Nav/Nav";
 import Cart from "../Cart/Cart";
 import Main from "../Main/Main";
@@ -10,33 +10,26 @@ import productsData from "../../MOCK_DATA.json";
 const App = () => {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
-  const cartRef = useRef([]);
-
-  const totalAmount = useMemo(
-    () =>
-      cartRef.current.reduce((prev, item) => {
-        if (item.checked) {
-          prev += item.price * Number(item.quantity);
-        }
-        return prev;
-      }, 0),
-    []
-  );
+  const history = useHistory();
 
   //장바구니에 선택한 물품 추가
   const handleAddToCart = (product) => {
     setCart((prev) => {
-      if (prev.some((item) => item.id === product.id)) {
-        let index = prev.findIndex((item) => item.id === product.id);
-        prev[index].quantity += 1;
+      const items = [...prev];
+      if (items.some((item) => item.id === product.id)) {
+        let index = items.findIndex((item) => item.id === product.id);
+        items[index].quantity += 1;
       } else {
-        prev.push({ ...product, quantity: 1 });
+        items.push({ ...product, quantity: 1 });
       }
-      return prev;
+      return items;
     });
 
     // cart가 업데이트되면 local storage에 cart 업데이트하기
     localStorage.cart = JSON.stringify(cart);
+
+    // 장바구니로 이동하기
+    history.push("/cart");
   };
 
   useEffect(() => {
@@ -51,7 +44,7 @@ const App = () => {
 
   return (
     <>
-      <Nav />
+      <Nav cartCount={cart.length} />
       <main>
         {/* Switch로 Component를 감싸게 되면 처음 매칭되는 Component만을 렌더링하게 된다. */}
         <Switch>
@@ -67,11 +60,7 @@ const App = () => {
               <Item products={products} addToCart={handleAddToCart} />
             )}
           />
-          <Route
-            exact
-            path="/cart"
-            component={() => <Cart cart={cart} totalAmount={totalAmount} />}
-          />
+          <Route exact path="/cart" component={() => <Cart cart={cart} />} />
         </Switch>
       </main>
     </>
