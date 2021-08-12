@@ -10,6 +10,7 @@
 
 - NPM
 - Yarn
+- React
 
 ## Preview
 
