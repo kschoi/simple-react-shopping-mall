@@ -5,7 +5,7 @@ import Nav from "../Nav/Nav";
 import Cart from "../Cart/Cart";
 import Main from "../Main/Main";
 import Item from "../Item/Item";
-import productsData from "../../MOCK_DATA.json";
+import productsData from "../../redux/MOCK_DATA.json";
 
 const App = () => {
   const [products, setProducts] = useState([]);
@@ -43,7 +43,7 @@ const App = () => {
   }, []);
 
   return (
-    <>
+    <div>
       <Nav cartCount={cart.length} />
       <main>
         {/* Switch로 Component를 감싸게 되면 처음 매칭되는 Component만을 렌더링하게 된다. */}
@@ -63,7 +63,7 @@ const App = () => {
           <Route exact path="/cart" component={() => <Cart cart={cart} />} />
         </Switch>
       </main>
-    </>
+    </div>
   );
 };
 
